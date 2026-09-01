@@ -1,0 +1,91 @@
+---
+title: "Clasificación con Naive Bayes: Conjunto de Datos Iris"
+author: "Generado automáticamente"
+date: "`r Sys.Date()`"
+output: 
+  html_document:
+    toc: true
+    toc_float: true
+    theme: spacelab
+---
+
+## Introducción a Naive Bayes
+
+Basado en los conceptos del documento "Naive.Bayes.pdf", un clasificador Naive Bayes es un método supervisado que permite entrenar un modelo para determinar la clase más probable a asignar a un registro, dado un conjunto de características. 
+
+Al igual que con algoritmos basados en árboles de decisión (como ID3 o J48) para la clasificación de conjuntos de datos, Naive Bayes aborda el problema pero desde una perspectiva puramente probabilística fundamentada en el Teorema de Bayes:
+
+$$P(A|B)=\frac{P(A)*P(B|A)}{P(B)}$$
+
+### El Supuesto "Ingenuo"
+
+Dada la variable de clase $c$ y un vector de características $x_i$, aplicando el supuesto ingenuo de independencia condicional (que asume que los atributos son independientes entre sí dado el valor de la clase), la fórmula general de Bayes se simplifica. Dado que la probabilidad de los datos de entrada $P(x_1,...,x_n)$ es constante para todas las clases, no afecta la comparación relativa y se puede omitir de la fórmula principal:
+
+$$P(c|x_1,...x_n)=P(c)*\prod_{i=1}^{n}P(x_i|c)$$
+
+### Prevención de Underflow
+
+En la práctica computacional, al multiplicar muchas probabilidades (valores entre 0 y 1), el resultado puede ser tan pequeño (por ejemplo, $10^{-1000}$) que el sistema lo redondea a 0.0 debido a los límites de precisión del hardware. Para evitar este problema de *underflow*, el algoritmo suele implementarse utilizando logaritmos:
+
+$$Clase\_predicha=\max(c_j)*[\log(P(c_j))+\sum \log(P(x_i|c_j))]$$
+
+### Estimación para Variables Continuas
+
+A diferencia de los datos discretos donde se cuentan frecuencias, los atributos del conjunto Iris (largo y ancho de sépalos y pétalos) son continuos. En este caso, el modelo asume que cada atributo se distribuye de acuerdo a una distribución normal (Gaussiana). La verosimilitud $P(x_i|c)$ se calcula utilizando la función de densidad gaussiana:
+
+$$P(x_i|c)=\frac{1}{\sqrt{2\pi}\sigma_i^c} \exp\left(-\frac{(x_i-\mu_i^c)^2}{2(\sigma_i^c)^2}\right)$$
+
+---
+
+## Aplicación en R (Dataset Iris)
+
+A continuación, implementaremos este algoritmo utilizando el paquete `e1071` en R, el cual maneja internamente las distribuciones gaussianas para variables numéricas.
+
+### 1. Cargar el entorno y los datos
+
+```{r, message=FALSE, warning=FALSE}
+# Instalar e1071 si no está disponible: install.packages("e1071")
+library(e1071)
+library(caret) # Para la matriz de confusión
+
+# Cargar el conjunto de datos
+data(iris)
+head(iris)
+```
+
+### 2. División de Entrenamiento y Prueba
+
+Separamos los datos para evaluar la capacidad de generalización del modelo.
+
+```{r}
+set.seed(123)
+# 70% entrenamiento, 30% prueba
+indices <- sample(1:nrow(iris), 0.7 * nrow(iris))
+train_data <- iris[indices, ]
+test_data <- iris[-indices, ]
+```
+
+### 3. Entrenamiento del Modelo
+
+```{r}
+# Entrenar el modelo Naive Bayes
+# El algoritmo detecta que las variables son continuas y aplica la densidad gaussiana
+modelo_nb <- naiveBayes(Species ~ ., data = train_data)
+
+# Mostrar las probabilidades a priori y medias/desviaciones estándar calculadas
+print(modelo_nb)
+```
+
+### 4. Evaluación del Modelo
+
+Realizamos las predicciones sobre el subconjunto de prueba y validamos los resultados.
+
+```{r}
+# Realizar predicciones
+predicciones <- predict(modelo_nb, test_data)
+
+# Generar y mostrar la matriz de confusión
+matriz_confusion <- confusionMatrix(predicciones, test_data$Species)
+print(matriz_confusion)
+```
+

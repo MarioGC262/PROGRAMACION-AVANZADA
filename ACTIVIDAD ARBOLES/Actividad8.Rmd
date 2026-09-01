@@ -1,0 +1,102 @@
+---
+title: "Actividad Naive Bayes - Rendimiento Estudiantil FCI"
+author: "Mario Garcia Castillo"
+date: "`r Sys.Date()`"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+## 1. Introducción
+En esta actividad aplicaremos el algoritmo de **Naive Bayes** para clasificar el rendimiento de un grupo de estudiantes de la FCI basándonos en sus hábitos de estudio y situación económica.
+
+## 2. Conjunto de Datos
+Con un conjunto de 35 estudiantes con las variables indicadas:
+
+```{r load_data}
+# Cargamos los datos simulados
+datos_csv <- "TiempoEstudio,Asistencia,Participacion,SituacionEcon,Rendimiento
+Alto,Alta,Alta,Buena,Excelente
+Medio,Media,Baja,Mala,Regular
+Bajo,Baja,Baja,Mala,Deficiente
+Alto,Alta,Media,Buena,Bueno
+Medio,Media,Media,Buena,Bueno
+Alto,Alta,Alta,Buena,Excelente
+Bajo,Baja,Baja,Mala,Deficiente
+Medio,Alta,Media,Buena,Bueno
+Alto,Media,Alta,Buena,Excelente
+Bajo,Baja,Media,Mala,Regular
+Alto,Alta,Alta,Buena,Excelente
+Alto,Alta,Alta,Buena,Excelente
+Medio,Medio,Media,Mala,Regular
+Media,Media,Media,Buena,Regular
+Media,Media,Media,Buena,Regular
+Bajo,Media,Baja,Mala,Deficiente
+Baja,Bajo,Media,Mala,Deficiente
+Alto,Media,Media,Buena,Bueno
+Alto,Alta,Alta,Buena,Excelente
+Media,Media,Baja,Buena,Regular
+Baja,Bajo,Media,Mala,Deficiente
+Medio,Medio,Baja,Mala,Deficiente
+Media,Alto,Baja,Buena,Deficiente
+Medio,Media,Alta,Mala,Bueno
+Alto,Alta,Media,Buena,Excelente
+Alto,Alta,Media,Mala,Bueno
+Baja,Baja,Baja,Mala,Deficiente
+Media,Medio,Media,Buena,Regular
+Medio,Media,Media,Mala,Regular
+Media,Media,Media,Buena,Regular
+Baja,Baja,Baja,Mala,Deficiente
+Alto,Alta,Baja,Buena,Bueno
+Medio,Baja,Baja,Mala,Deficiente
+Bajo,Media,Media,Mala,Regular
+Alta,Alta,Alta,Buena,Bueno"
+datos <- read.csv(text = datos_csv)
+
+# Convertimos las variables a factores
+datos$TiempoEstudio <- as.factor(datos$TiempoEstudio)
+datos$Asistencia <- as.factor(datos$Asistencia)
+datos$Participacion <- as.factor(datos$Participacion)
+datos$SituacionEcon <- as.factor(datos$SituacionEcon)
+datos$Rendimiento <- as.factor(datos$Rendimiento)
+
+summary(datos)
+```
+
+## 3. División de los Datos (80% Entrenamiento, 20% Prueba)
+```{r split}
+set.seed(123) # Para reproducibilidad
+n <- nrow(datos)
+indices_entrenamiento <- sample(1:n, size = round(0.8 * n))
+
+train_data <- datos[indices_entrenamiento, ]
+test_data <- datos[-indices_entrenamiento, ]
+
+cat("Tamaño del set de entrenamiento:", nrow(train_data), "\n")
+cat("Tamaño del set de prueba:", nrow(test_data), "\n")
+```
+
+## 4. Entrenamiento del Modelo Naive Bayes
+Utilizamos la librería `e1071` para aplicar Naive Bayes.
+```{r train_model}
+# install.packages("e1071")
+library(e1071)
+
+modelo_nb <- naiveBayes(Rendimiento ~ ., data = train_data)
+print(modelo_nb)
+```
+
+## 5. Predicción y Matriz de Confusión
+```{r predict}
+predicciones <- predict(modelo_nb, test_data)
+
+# Matriz de Confusión
+matriz_confusion <- table(Prediccion = predicciones, Real = test_data$Rendimiento)
+print(matriz_confusion)
+
+# Precisión del modelo
+precision <- sum(diag(matriz_confusion)) / sum(matriz_confusion)
+cat("Precisión del modelo en el set de prueba:", round(precision * 100, 2), "%\n")
+```

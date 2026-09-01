@@ -1,0 +1,111 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Clasificación con Naive Bayes: Conjunto de Datos Iris</title>
+    <script src="https://polyfill.io/v3/polyfill.min.js?features=es6"></script>
+    <script id="MathJax-script" async src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
+    <style>
+        body {
+            font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif;
+            line-height: 1.6;
+            color: #333;
+            max-width: 850px;
+            margin: 0 auto;
+            padding: 30px 20px;
+            background-color: #fdfdfd;
+        }
+        h1, h2, h3 {
+            color: #2c3e50;
+        }
+        h2 {
+            border-bottom: 2px solid #3498db;
+            padding-bottom: 5px;
+            margin-top: 40px;
+        }
+        pre {
+            background-color: #f4f6f7;
+            border: 1px solid #dcdde1;
+            padding: 15px;
+            border-radius: 5px;
+            overflow-x: auto;
+            font-family: 'Consolas', 'Monaco', monospace;
+        }
+        code {
+            background-color: #f4f6f7;
+            padding: 2px 4px;
+            border-radius: 3px;
+            font-family: 'Consolas', 'Monaco', monospace;
+            font-size: 0.9em;
+        }
+        hr {
+            border: 0;
+            border-top: 1px solid #eee;
+            margin: 30px 0;
+        }
+    </style>
+</head>
+<body>
+    <hr />
+<p>title: "Clasificación con Naive Bayes: Conjunto de Datos Iris"
+author: "Generado automáticamente"
+date: "<code>r Sys.Date()</code>"
+output: 
+  html_document:
+    toc: true
+    toc_float: true
+    theme: spacelab</p>
+<hr />
+<h2>Introducción a Naive Bayes</h2>
+<p>Basado en los conceptos del documento "Naive.Bayes.pdf", un clasificador Naive Bayes es un método supervisado que permite entrenar un modelo para determinar la clase más probable a asignar a un registro, dado un conjunto de características. </p>
+<p>Al igual que con algoritmos basados en árboles de decisión (como ID3 o J48) para la clasificación de conjuntos de datos, Naive Bayes aborda el problema pero desde una perspectiva puramente probabilística fundamentada en el Teorema de Bayes:</p>
+<p>$$P(A|B)=\frac{P(A)*P(B|A)}{P(B)}$$</p>
+<h3>El Supuesto "Ingenuo"</h3>
+<p>Dada la variable de clase $c$ y un vector de características $x_i$, aplicando el supuesto ingenuo de independencia condicional (que asume que los atributos son independientes entre sí dado el valor de la clase), la fórmula general de Bayes se simplifica. Dado que la probabilidad de los datos de entrada $P(x_1,...,x_n)$ es constante para todas las clases, no afecta la comparación relativa y se puede omitir de la fórmula principal:</p>
+<p>$$P(c|x_1,...x_n)=P(c)*\prod_{i=1}^{n}P(x_i|c)$$</p>
+<h3>Prevención de Underflow</h3>
+<p>En la práctica computacional, al multiplicar muchas probabilidades (valores entre 0 y 1), el resultado puede ser tan pequeño (por ejemplo, $10^{-1000}$) que el sistema lo redondea a 0.0 debido a los límites de precisión del hardware. Para evitar este problema de <em>underflow</em>, el algoritmo suele implementarse utilizando logaritmos:</p>
+<p>$$Clase_predicha=\max(c_j)*[\log(P(c_j))+\sum \log(P(x_i|c_j))]$$</p>
+<h3>Estimación para Variables Continuas</h3>
+<p>A diferencia de los datos discretos donde se cuentan frecuencias, los atributos del conjunto Iris (largo y ancho de sépalos y pétalos) son continuos. En este caso, el modelo asume que cada atributo se distribuye de acuerdo a una distribución normal (Gaussiana). La verosimilitud $P(x_i|c)$ se calcula utilizando la función de densidad gaussiana:</p>
+<p>$$P(x_i|c)=\frac{1}{\sqrt{2\pi}\sigma_i^c} \exp\left(-\frac{(x_i-\mu_i^c)^2}{2(\sigma_i^c)^2}\right)$$</p>
+<hr />
+<h2>Aplicación en R (Dataset Iris)</h2>
+<p>A continuación, implementaremos este algoritmo utilizando el paquete <code>e1071</code> en R, el cual maneja internamente las distribuciones gaussianas para variables numéricas.</p>
+<h3>1. Cargar el entorno y los datos</h3>
+<pre><code># Instalar e1071 si no está disponible: install.packages(&quot;e1071&quot;)
+library(e1071)
+library(caret) # Para la matriz de confusión
+
+# Cargar el conjunto de datos
+data(iris)
+head(iris)
+</code></pre>
+<h3>2. División de Entrenamiento y Prueba</h3>
+<p>Separamos los datos para evaluar la capacidad de generalización del modelo.</p>
+<pre><code>set.seed(123)
+# 70% entrenamiento, 30% prueba
+indices &lt;- sample(1:nrow(iris), 0.7 * nrow(iris))
+train_data &lt;- iris[indices, ]
+test_data &lt;- iris[-indices, ]
+</code></pre>
+<h3>3. Entrenamiento del Modelo</h3>
+<pre><code># Entrenar el modelo Naive Bayes
+# El algoritmo detecta que las variables son continuas y aplica la densidad gaussiana
+modelo_nb &lt;- naiveBayes(Species ~ ., data = train_data)
+
+# Mostrar las probabilidades a priori y medias/desviaciones estándar calculadas
+print(modelo_nb)
+</code></pre>
+<h3>4. Evaluación del Modelo</h3>
+<p>Realizamos las predicciones sobre el subconjunto de prueba y validamos los resultados.</p>
+<pre><code># Realizar predicciones
+predicciones &lt;- predict(modelo_nb, test_data)
+
+# Generar y mostrar la matriz de confusión
+matriz_confusion &lt;- confusionMatrix(predicciones, test_data$Species)
+print(matriz_confusion)
+</code></pre>
+</body>
+</html>

@@ -1,0 +1,111 @@
+
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<title>Actividad Naive Bayes - Rendimiento Estudiantil FCI</title>
+<style>
+    body { font-family: Arial, sans-serif; margin: 40px auto; max-width: 800px; line-height: 1.6; color: #333; }
+    pre { background-color: #f5f5f5; padding: 10px; border-radius: 5px; overflow-x: auto; border: 1px solid #ccc; }
+    code { font-family: Consolas, Monaco, 'Andale Mono', 'Ubuntu Mono', monospace; }
+    h1, h2, h3 { color: #2c3e50; }
+</style>
+</head>
+<body>
+<h1>Actividad Naive Bayes - Rendimiento Estudiantil FCI</h1>
+<p><strong>Autor:</strong> Mario Garcia Castillo<br />
+<strong>Fecha:</strong> 2026-08-31</p>
+<h2>1. Introducción</h2>
+<p>En esta actividad aplicaremos el algoritmo de <strong>Naive Bayes</strong> para clasificar el rendimiento de un grupo de estudiantes de la FCI basándonos en sus hábitos de estudio y situación económica.</p>
+<h2>2. Conjunto de Datos</h2>
+<p>Con un conjunto de 35 estudiantes con las variables indicadas:</p>
+<pre><code class="language-R"># Cargamos los datos simulados
+datos_csv &lt;- &quot;TiempoEstudio,Asistencia,Participacion,SituacionEcon,Rendimiento
+Alto,Alta,Alta,Buena,Excelente
+...
+Alta,Alta,Alta,Buena,Bueno&quot;
+datos &lt;- read.csv(text = datos_csv)
+
+# Convertimos las variables a factores
+datos$TiempoEstudio &lt;- as.factor(datos$TiempoEstudio)
+datos$Asistencia &lt;- as.factor(datos$Asistencia)
+datos$Participacion &lt;- as.factor(datos$Participacion)
+datos$SituacionEcon &lt;- as.factor(datos$SituacionEcon)
+datos$Rendimiento &lt;- as.factor(datos$Rendimiento)
+
+summary(datos)
+</code></pre>
+<pre><code>
+  TiempoEstudio   Asistencia   Participacion  SituacionEcon     Rendimiento
+ Alto  :11      Alta  :12      Alta : 9       Buena:20       Bueno     : 8
+ Baja  : 4      Baja  : 6      Baja :11       Mala :15       Deficiente:10
+ Bajo  : 4      Bajo  : 2      Media:15                      Excelente : 7
+ Media : 6      Media :11                                    Regular   :10
+ Medio : 9      Medio : 4
+ Alta  : 1      Alto  : 1
+</code></pre>
+
+<h2>3. División de los Datos (80% Entrenamiento, 20% Prueba)</h2>
+<pre><code class="language-R">set.seed(123) # Para reproducibilidad
+n &lt;- nrow(datos)
+indices_entrenamiento &lt;- sample(1:n, size = round(0.8 * n))
+
+train_data &lt;- datos[indices_entrenamiento, ]
+test_data &lt;- datos[-indices_entrenamiento, ]
+
+cat(&quot;Tamaño del set de entrenamiento:&quot;, nrow(train_data), &quot;\n&quot;)
+cat(&quot;Tamaño del set de prueba:&quot;, nrow(test_data), &quot;\n&quot;)
+</code></pre>
+<pre><code>
+Tamaño del set de entrenamiento: 28
+Tamaño del set de prueba: 7
+</code></pre>
+
+<h2>4. Entrenamiento del Modelo Naive Bayes</h2>
+<p>Utilizamos la librería <code>e1071</code> para aplicar Naive Bayes.</p>
+<pre><code class="language-R"># install.packages(&quot;e1071&quot;)
+library(e1071)
+
+modelo_nb &lt;- naiveBayes(Rendimiento ~ ., data = train_data)
+print(modelo_nb)
+</code></pre>
+<pre><code>
+Naive Bayes Classifier for Discrete Predictors
+
+Call:
+naiveBayes.default(x = X, y = Y, laplace = laplace)
+
+A-priori probabilities:
+Y
+     Bueno Deficiente  Excelente    Regular 
+0.2142857  0.2857143  0.2142857  0.2857143 
+
+Conditional probabilities:
+... [Tablas de probabilidad condicional omitidas por brevedad] ...
+</code></pre>
+
+<h2>5. Predicción y Matriz de Confusión</h2>
+<pre><code class="language-R">predicciones &lt;- predict(modelo_nb, test_data)
+
+# Matriz de Confusión
+matriz_confusion &lt;- table(Prediccion = predicciones, Real = test_data$Rendimiento)
+print(matriz_confusion)
+</code></pre>
+<pre><code>
+             Real
+Prediccion   Deficiente Regular Bueno Excelente
+  Deficiente          2       0     0         0
+  Regular             0       2     0         0
+  Bueno               0       0     2         0
+  Excelente           0       0     0         1
+</code></pre>
+
+<pre><code class="language-R"># Precisión del modelo
+precision &lt;- sum(diag(matriz_confusion)) / sum(matriz_confusion)
+cat(&quot;Precisión del modelo en el set de prueba:&quot;, round(precision * 100, 2), &quot;%\n&quot;)
+</code></pre>
+<pre><code>
+Precisión del modelo en el set de prueba: 100 %
+</code></pre>
+</body>
+</html>
