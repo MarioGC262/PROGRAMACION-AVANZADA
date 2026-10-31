@@ -17,8 +17,12 @@ El sistema cuenta con un servidor web integrado que ofrece una interfaz gráfica
 
 - **SWI-Prolog:** Lenguaje de programación lógica, motor de reglas y persistencia dinámica.
 - **HTTP Server de SWI-Prolog (`library(http/http_server)`):** Servidor web modular integrado.
-- **HTML5 & CSS3:** Interfaz de usuario integrada con diseño responsive y menú lateral navegable.
 - **Visual Studio Code / Terminal (PowerShell):** Entorno de ejecución y administración del servidor.
+- **Librerías Web de SWI-Prolog:** Conjunto de módulos integrados para gestionar conexiones, enrutamiento y servicios HTTP.
+- **Librería de Listas y JSON (library(lists) y library(http/json)):** Utilidades para la manipulación avanzada de secuencias y el intercambio de datos estructurados.
+- **HTML5 y CSS3 (Flexbox y Grid):** Tecnologías de maquetación y diseño visual para interfaces web modernas y adaptables.
+- **Persistencia nativa de Prolog:** Sistema integrado para almacenar y sincronizar bases de conocimientos y hechos lógicos en archivos locales.
+- **Windows PowerShell y Navegador Web:** Entorno de comandos para la ejecución de procesos del servidor y plataforma de visualización de la interfaz de usuario.
 
 ## 3. Estructura del proyecto
 
@@ -58,22 +62,22 @@ Antes de ejecutar el sistema, asegúrate de cumplir con los siguientes requisito
 
 ## 5. Cómo ejecutar el sistema
 
-### Paso 1: Abrir la terminal o PowerShell
-Abre Windows PowerShell o la terminal de tu elección.
+### Paso 1: Abrir la terminal
+Abre la terminal, NO CMD NI POWERSHELL .
 
 ### Paso 2: Navegar a la carpeta del servidor
 Accede a la ruta del directorio donde se encuentran los archivos del proyecto usando el comando `cd`:
 
-```powershell
-cd C:\Users\layto\OneDrive\Desktop\servidor
+```Terminal
+cd C:\RUTA PROPIA DONDE ESTA SU CARPETA\servidor
 ```
 *(Ajusta la ruta según la ubicación real de la carpeta `servidor` en tu equipo).*
 
 ### Paso 3: Iniciar el servidor con SWI-Prolog
-Ejecuta el siguiente comando llamando al ejecutable de SWI-Prolog e indicando la carga de `server.pl`:
+Ejecuta el siguiente comando llamando al ejecutable de SWI-Prolog e indicando la carga de `server.pl` igual ajustando a la ruta donde se encuentra swi_prolog.exe:
 
-```powershell
-& "C:\Program Files\swipl\bin\swipl.exe" -s server.pl
+```Terminal
+& "C:\Directorio donde se almacena swi_prolog.exe" -s server.pl
 ```
 
 *(Nota: En caso de escribir `-s server.p` por error, la consola indicará que el archivo no existe. Asegúrate de incluir la extensión `.pl` completa).*
